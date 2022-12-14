@@ -1,0 +1,125 @@
+# Inspired by: https://docs.github.com/en/actions/deployment/deploying-to-your-cloud-provider/deploying-to-amazon-elastic-container-service
+
+name: 'Deploy to Amazon ECS action'
+description: 'This action perform an ECS update'
+
+on:
+  workflow_call:
+    secrets:
+      AWS_SECRET_ACCESS_KEY:
+        description: AWS secret
+        required: true
+        default: ""
+      AWS_SECRET_KEY_ID:
+        description: AWS secret id
+        required: true
+        default: ""
+      NPM_TOKEN:
+        description: NPM admin token for building the project
+        required: true
+        default: ""
+      SENTRY_DSN:
+        required: true
+
+    inputs:     
+      # Required for TSOA
+      API_URL:
+        required: true
+      # ECR registry stuff (docker registry)
+      AWS_REGION:
+        default: "eu-west-3"
+      ECR_REGISTRY:
+        required: true
+        description: Looks like <ACCOUNT_ID>.dkr.ecr.eu-west-3.amazonaws.com 
+      ECR_REPOSITORY:
+        required: true
+
+      CONTAINER_NAME:
+        required: true
+
+      # ECS stuff
+      ECS_SERVICE:
+        required: true
+      ECS_CLUSTER:
+        required: true
+      TASK_DEFINITION:
+        required: true
+
+      # Sentry stuff
+      SENTRY_PROJECT:
+        required: true
+      SENTRY_ORG:
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@13d241b293754004c80624b5567555c4a39ffbe3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_SECRET_KEY_ID_DEV }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@aaf69d68aa3fb14c1d5a6be9ac61fe15b48453a2
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ inputs.ECS_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          API_URL: ${{ inputs.API_URL }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SENTRY_ORG: ${{ inputs.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ inputs.SENTRY_PROJECT }}
+        run: |
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to ECS.
+          docker buildx build --platform=linux/amd64 \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -f ./dockerfile/Dockerfile \
+            --build-arg NPM_TOKEN=$NPM_TOKEN \
+            --build-arg API_URL=$API_URL \
+            --build-arg SENTRY_DSN=$SENTRY_DSN \
+            --build-arg SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN \
+            --build-arg SENTRY_ORG=$SENTRY_ORG \
+            --build-arg SENTRY_PROJECT=$SENTRY_PROJECT \
+            .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Download task definition
+        env:
+          TASK_DEFINITION: ${{ inputs.TASKS_DEFINITION }}
+        run: |
+            aws ecs describe-task-definition --task-definition $TASK_DEFINITION --query taskDefinition > task-definition.json
+      
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ inputs.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ inputs.ECS_SERVICE }}
+          cluster: ${{ inputs.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
