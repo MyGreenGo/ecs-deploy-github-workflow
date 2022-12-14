@@ -18,8 +18,6 @@ on:
         description: NPM admin token for building the project
         required: true
         default: ""
-      SENTRY_DSN:
-        required: true
 
     inputs:     
       # Required for TSOA
@@ -50,6 +48,9 @@ on:
         required: true
       SENTRY_ORG:
         required: true
+      SENTRY_DSN:
+        required: true
+
 
 jobs:
   deploy:
