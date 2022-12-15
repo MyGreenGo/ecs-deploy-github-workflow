@@ -24,6 +24,8 @@ on:
       AWS_REGION:
         default: eu-west-3
         required: false
+        type: string
+
       ECR_REGISTRY:
         required: true
         description: Looks like <ACCOUNT_ID>.dkr.ecr.eu-west-3.amazonaws.com 
