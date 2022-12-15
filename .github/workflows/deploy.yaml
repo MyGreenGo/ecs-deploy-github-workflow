@@ -14,6 +14,9 @@ on:
       NPM_TOKEN:
         description: NPM admin token for building the project
         required: true
+      SENTRY_AUTH_TOKEN:
+        description: NPM admin token for building the project
+        required: true
 
     inputs:     
       # Required for TSOA
