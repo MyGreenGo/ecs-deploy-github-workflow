@@ -19,6 +19,7 @@ on:
       # Required for TSOA
       API_URL:
         required: true
+        type: string
       # ECR registry stuff (docker registry)
       AWS_REGION:
         default: eu-west-3
