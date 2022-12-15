@@ -115,7 +115,7 @@ jobs:
 
       - name: Download task definition
         env:
-          TASK_DEFINITION: ${{ inputs.TASKS_DEFINITION }}
+          TASK_DEFINITION: ${{ inputs.TASK_DEFINITION }}
         run: |
             aws ecs describe-task-definition --task-definition $TASK_DEFINITION --query taskDefinition > task-definition.json
       
