@@ -8,58 +8,45 @@ on:
       AWS_SECRET_ACCESS_KEY:
         description: AWS secret
         required: true
-        type: string
       AWS_SECRET_KEY_ID:
         description: AWS secret id
         required: true
-        type: string
       NPM_TOKEN:
         description: NPM admin token for building the project
         required: true
-        type: string
 
     inputs:     
       # Required for TSOA
       API_URL:
         required: true
-        type: string
       # ECR registry stuff (docker registry)
       AWS_REGION:
         default: eu-west-3
         required: false
       ECR_REGISTRY:
         required: true
-        type: string
         description: Looks like <ACCOUNT_ID>.dkr.ecr.eu-west-3.amazonaws.com 
       ECR_REPOSITORY:
         required: true
-        type: string
 
       CONTAINER_NAME:
         required: true
-        type: string
 
       # ECS stuff
       ECS_SERVICE:
         required: true
-        type: string
       ECS_CLUSTER:
         required: true
-        type: string
       TASK_DEFINITION:
         required: true
-        type: string
 
       # Sentry stuff
       SENTRY_PROJECT:
         required: true
-        type: string
       SENTRY_ORG:
         required: true
-        type: string
       SENTRY_DSN:
         required: true
-        type: string
 
 jobs:
   deploy:
