@@ -1,7 +1,6 @@
 # Inspired by: https://docs.github.com/en/actions/deployment/deploying-to-your-cloud-provider/deploying-to-amazon-elastic-container-service
 
-name: 'Deploy to Amazon ECS action'
-description: 'This action perform an ECS update'
+name: Deploy to Amazon ECS action
 
 on:
   workflow_call:
@@ -9,15 +8,12 @@ on:
       AWS_SECRET_ACCESS_KEY:
         description: AWS secret
         required: true
-        default: ""
       AWS_SECRET_KEY_ID:
         description: AWS secret id
         required: true
-        default: ""
       NPM_TOKEN:
         description: NPM admin token for building the project
         required: true
-        default: ""
 
     inputs:     
       # Required for TSOA
@@ -25,7 +21,8 @@ on:
         required: true
       # ECR registry stuff (docker registry)
       AWS_REGION:
-        default: "eu-west-3"
+        default: eu-west-3
+        required: false
       ECR_REGISTRY:
         required: true
         description: Looks like <ACCOUNT_ID>.dkr.ecr.eu-west-3.amazonaws.com 
@@ -50,7 +47,6 @@ on:
         required: true
       SENTRY_DSN:
         required: true
-
 
 jobs:
   deploy:
