@@ -59,9 +59,6 @@ on:
       SENTRY_ORG:
         required: true
         type: string
-      SENTRY_DSN:
-        required: true
-        type: string
 
 jobs:
   deploy:
@@ -93,7 +90,6 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           API_URL: ${{ inputs.API_URL }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           SENTRY_ORG: ${{ inputs.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ inputs.SENTRY_PROJECT }}
         run: |
@@ -105,7 +101,6 @@ jobs:
             -f ./dockerfile/Dockerfile \
             --build-arg NPM_TOKEN=$NPM_TOKEN \
             --build-arg API_URL=$API_URL \
-            --build-arg SENTRY_DSN=$SENTRY_DSN \
             --build-arg SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN \
             --build-arg SENTRY_ORG=$SENTRY_ORG \
             --build-arg SENTRY_PROJECT=$SENTRY_PROJECT \
