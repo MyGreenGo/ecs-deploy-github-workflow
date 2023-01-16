@@ -19,6 +19,12 @@ on:
         required: true
 
     inputs:     
+
+      COMMIT_HASH:
+        required: true
+        description: Sha of the commit to be deployed
+        type: string
+
       # Required for TSOA
       API_URL:
         required: true
@@ -69,6 +75,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.COMMIT_HASH }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@13d241b293754004c80624b5567555c4a39ffbe3
